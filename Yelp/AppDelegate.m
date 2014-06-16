@@ -17,6 +17,19 @@
     
     self.window.rootViewController = [[MainViewController alloc] init];
     
+    
+    
+    MainViewController *vc = [[MainViewController alloc] init];
+    
+    UINavigationController *uvc = [[UINavigationController alloc] initWithRootViewController:vc];
+    
+    uvc.navigationBar.barTintColor = [UIColor redColor];
+    uvc.navigationBar.alpha = 0.75;
+    uvc.navigationBar.translucent = NO;
+    
+    self.window.rootViewController = uvc;
+    
+
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     return YES;
