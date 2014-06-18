@@ -1,4 +1,4 @@
-#RottenTomatoes README
+#Yelp README
 
 ##Creating the Project README
 
