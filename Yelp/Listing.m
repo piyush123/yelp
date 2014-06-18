@@ -19,8 +19,7 @@
              };
 }
 
-
-+ (NSArray *)listinsWithArray:(NSArray *)array {
++ (NSArray *)listingsWithArray:(NSArray *)array {
     NSMutableArray *listings = [[NSMutableArray alloc] init];
     
     for (NSDictionary *dictionary in array) {

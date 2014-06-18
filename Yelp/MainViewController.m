@@ -10,6 +10,8 @@
 #import "YelpClient.h"
 #import "Listing.h"
 #import "ListingCell.h"
+#import "FilterViewController.h"
+#import <MBProgressHUD/MBProgressHUD.h>
 #import <AFNetworking/AFNetworking.h>
 #import <AFNetworking/UIImageView+AFNetworking.h>
 
@@ -28,6 +30,11 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
 
 @property (nonatomic,strong) Listing *listing;
 
+@property (nonatomic, strong) NSMutableArray* searchResults;
+@property (weak, nonatomic) IBOutlet UITableView *searchResultsTable;
+
+@property (strong, nonatomic) IBOutlet UISearchBar *searchBar;
+@property (nonatomic, strong) NSMutableDictionary *filters;
 
 @end
 
@@ -38,17 +45,10 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         // You can register for Yelp API keys here: http://www.yelp.com/developers/manage_api_keys
-        self.client = [[YelpClient alloc] initWithConsumerKey:kYelpConsumerKey consumerSecret:kYelpConsumerSecret accessToken:kYelpToken accessSecret:kYelpTokenSecret];
         
-        [self.client searchWithTerm:@"Thai" success:^(AFHTTPRequestOperation *operation, id response) {
-
-            self.listings = response[@"businesses"];
-            
-            [self.tableView reloadData];
-            NSLog(@"listing: %@", self.listings[0]);
-        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            NSLog(@"error: %@", [error description]);
-        }];
+        self.filters = [[NSMutableDictionary alloc] initWithDictionary:@{@"term":@"Thai", @"location":@"San Francisco"}];
+        
+        self.client = [[YelpClient alloc] initWithConsumerKey:kYelpConsumerKey consumerSecret:kYelpConsumerSecret accessToken:kYelpToken accessSecret:kYelpTokenSecret];
     }
     return self;
 }
@@ -56,6 +56,29 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+     self.searchResults = [[NSMutableArray alloc] init];
+    self.tableView.delegate = self;
+    self.tableView.dataSource = self;
+    //self.searchResultsTable.delegate = self;
+    //self.searchResultsTable.dataSource = self;
+    
+    self.searchBar = [[UISearchBar alloc] init];
+    self.searchBar.delegate = self;
+    [self.searchBar sizeToFit];
+    
+    
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Filter"
+                                                                             style:UIBarButtonItemStylePlain
+                                                                            target:self
+                                                                            action:@selector(didClickFilter)];
+    
+    UISearchBar *searchBar = [UISearchBar new];
+    searchBar.showsCancelButton = NO;
+    searchBar.frame = CGRectMake(0, 0, 200, 24);
+    
+    UIView *barWrapper = [[UIView alloc]initWithFrame:searchBar.bounds];
+    [barWrapper addSubview:searchBar];
+    self.navigationItem.titleView = barWrapper;
     
     self.tableView.delegate = self;
 
@@ -66,7 +89,11 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
     
     self.tableView.dataSource = self;
     self.tableView.rowHeight = 100;
+    
+    [self doSearch];
 }
+
+
 
 - (void)didReceiveMemoryWarning
 {
@@ -74,10 +101,85 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
     // Dispose of any resources that can be recreated.
 }
 
+- (void)receiveFilter
+{
+    NSLog(@"filter");
+    
+}
+
+
+- (IBAction)filter:(id)sender
+{
+    NSLog(@"filter");
+    FilterViewController *j=[[FilterViewController alloc]init];
+    [self.navigationController pushViewController:j animated:YES];
+    
+    
+}
+
+- (void)doSearch
+{
+    [self.client search:self.filters success:^(AFHTTPRequestOperation *operation, id response) {
+        if ([response isKindOfClass:[NSDictionary class]]) {
+            id businesses = response[@"businesses"];
+            if ([businesses isKindOfClass:[NSArray class]]) {
+               [self.searchResults removeAllObjects];
+                for (NSDictionary* dict in businesses) {
+                    
+                    Listing *yelpListing;
+                    
+                    yelpListing = [MTLJSONAdapter modelOfClass:Listing.class fromJSONDictionary:dict error:NULL];
+                
+                    [self.searchResults addObject:yelpListing];
+                   // NSLog(@"got data %@", yelpListing);
+                }
+
+              //  [self.tableView reloadData];
+            }
+        }
+        
+    //    NSLog(@"got search %@", self.searchResults);
+
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"error: %@", [error description]);
+    }];
+    
+    
+}
+
+     
+
+- (void)didClickFilter
+{
+    NSLog(@"did click Filter delegated");
+    // TODO: probably shouldn't initialize this every time?
+    FilterViewController *filtersController = [[FilterViewController alloc] init];
+    filtersController.delegate = self;
+    
+    // wrap filtersController in a nav controller to get cancel and search buttons
+    UINavigationController *wrapperNavController = [[UINavigationController alloc] initWithRootViewController:filtersController];
+    [self presentViewController:wrapperNavController animated:YES completion: nil];
+}
+
+- (void)didConfirmFilter:(NSDictionary*)filters
+{
+    self.filters = [filters mutableCopy];
+    
+    NSLog(@"doing search 1 %@", self.filters);
+    [self dismissViewControllerAnimated:YES completion:nil];
+    [self doSearch];
+}
+
+- (void)didCancelFilter
+{
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
 
 - (NSInteger)tableView:(UITableView *)tableView
  numberOfRowsInSection:(NSInteger)section{
-    return self.listings.count;
+    return self.searchResults.count;
+    
 }
 
 
@@ -86,53 +188,13 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
     
    
     ListingCell *listingCell = [tableView dequeueReusableCellWithIdentifier:@"ListingCell"];
-   
-    Listing *yelpListing;
     
-    yelpListing = [MTLJSONAdapter modelOfClass:Listing.class fromJSONDictionary:self.listings[indexPath.row] error:NULL];
-    
-    NSLog(@"got listing %@", yelpListing);
+    Listing *yelpListing = self.searchResults[indexPath.row];
     
     listingCell.name.text = yelpListing.name;
-    
-    NSLog(@"address %@", yelpListing.address[0]);
-    
     listingCell.address.text = yelpListing.address[0];
-    
-    NSLog(@"categories %@", yelpListing.categories[0]);
-    
-    listingCell.radial_distance.text = @"0.75 mi";
-    
-    NSLog(@"review count %@", yelpListing.review_count);
-    listingCell.review_count.text = [NSString stringWithFormat:@"reviews %@", yelpListing.review_count];
-    NSURL *image_url = [[NSURL alloc]initWithString:yelpListing.image_url];
-    
-    NSURLRequest *request = [NSURLRequest requestWithURL:image_url cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:2*60]; // New line
-    
-    ListingCell *weakListingCell = listingCell;
-    
-    //  movieCell.posterImage setImageWithURL:[NSURL URLWithString:movie.posters[@"profile"]]];
-    
-    [listingCell.image setImageWithURLRequest:request
-                                placeholderImage:nil
-                                         success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
-                                             weakListingCell.image.image = image;
-                                             [weakListingCell setNeedsLayout];
-                                         } failure:nil];
-    
-    
-    NSURL *rating_url = [[NSURL alloc]initWithString:yelpListing.rating_img_url];
-    
-    NSURL *rating_request = [NSURLRequest requestWithURL:rating_url cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:2*60]; // New line
-    
-
-    [listingCell.rating_image setImageWithURLRequest:rating_request
-                             placeholderImage:nil
-                                      success:^(NSURLRequest *rating_request, NSHTTPURLResponse *response, UIImage *image) {
-                                          weakListingCell.rating_image.image = image;
-                                          [weakListingCell setNeedsLayout];
-                                      } failure:nil];
-    
+    NSLog(@"listing cell %@", listingCell);
+    [self.tableView reloadData];
     return listingCell;
 
 }

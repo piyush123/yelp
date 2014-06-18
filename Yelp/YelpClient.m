@@ -7,6 +7,7 @@
 //
 
 #import "YelpClient.h"
+#import "Listing.h"
 
 @implementation YelpClient
 
@@ -24,8 +25,13 @@
     
     // For additional parameters, see http://www.yelp.com/developers/documentation/v2/search_api
     NSDictionary *parameters = @{@"term": term, @"location" : @"San Francisco"};
-    
     return [self GET:@"search" parameters:parameters success:success failure:failure];
 }
 
+- (AFHTTPRequestOperation *)search:(NSDictionary *)parameters success:(void (^)(AFHTTPRequestOperation *operation, id response))success failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure {
+    return [self GET:@"search" parameters:parameters success:success failure:failure];
+}
+
+
 @end
+

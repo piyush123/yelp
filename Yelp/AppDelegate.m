@@ -23,13 +23,14 @@
     
     UINavigationController *uvc = [[UINavigationController alloc] initWithRootViewController:vc];
     
-    uvc.navigationBar.barTintColor = [UIColor redColor];
-    uvc.navigationBar.alpha = 0.75;
+    uvc.navigationBar.barTintColor =[UIColor colorWithRed:175/255.0f green:6/255.0f blue:6/255.0f alpha:1.0f];
+    uvc.navigationBar.alpha = 0.50;
     uvc.navigationBar.translucent = NO;
+    
+       
     
     self.window.rootViewController = uvc;
     
-
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     return YES;
