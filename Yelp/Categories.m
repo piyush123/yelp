@@ -19,7 +19,7 @@
 {
     self = [super init];
     if (self) {
-        // TODO: pretty sure this is the wrong pattern for storing text assets
+        
         self.selectedCategories = [[NSMutableSet alloc] init];
         self.categories = @[@[@"afghani",@"Afghan"],
                             @[@"african",@"African"],

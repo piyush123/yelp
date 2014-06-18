@@ -7,9 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Listing.h"
 
 @interface ListingCell : UITableViewCell
 
+
+- (void)setListing:(Listing *)yelpListing;
 
 @property (weak, nonatomic) IBOutlet UILabel *address;
 @property (weak, nonatomic) IBOutlet UILabel *review_count;

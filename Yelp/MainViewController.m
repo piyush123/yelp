@@ -46,7 +46,7 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
     if (self) {
         // You can register for Yelp API keys here: http://www.yelp.com/developers/manage_api_keys
         
-        self.filters = [[NSMutableDictionary alloc] initWithDictionary:@{@"term":@"Thai", @"location":@"San Francisco"}];
+        self.filters = [[NSMutableDictionary alloc] initWithDictionary:@{@"term":@"thai", @"location":@"San Francisco"}];
         
         self.client = [[YelpClient alloc] initWithConsumerKey:kYelpConsumerKey consumerSecret:kYelpConsumerSecret accessToken:kYelpToken accessSecret:kYelpTokenSecret];
     }
@@ -59,8 +59,7 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
      self.searchResults = [[NSMutableArray alloc] init];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
-    //self.searchResultsTable.delegate = self;
-    //self.searchResultsTable.dataSource = self;
+    
     
     self.searchBar = [[UISearchBar alloc] init];
     self.searchBar.delegate = self;
@@ -90,7 +89,10 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
     self.tableView.dataSource = self;
     self.tableView.rowHeight = 100;
     
+    //NSLog(@"Calling search from viewDid load");
     [self doSearch];
+    //NSLog(@"view did load search result size: %d", [self.searchResults count]);
+
 }
 
 
@@ -119,25 +121,31 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
 
 - (void)doSearch
 {
+    NSLog(@"In do search");
     [self.client search:self.filters success:^(AFHTTPRequestOperation *operation, id response) {
-        if ([response isKindOfClass:[NSDictionary class]]) {
-            id businesses = response[@"businesses"];
-            if ([businesses isKindOfClass:[NSArray class]]) {
+        NSLog(@"REsponse from yelp: %@", response);
+        
                [self.searchResults removeAllObjects];
-                for (NSDictionary* dict in businesses) {
+                for (NSDictionary* dict in response[@"businesses"]) {
                     
                     Listing *yelpListing;
                     
                     yelpListing = [MTLJSONAdapter modelOfClass:Listing.class fromJSONDictionary:dict error:NULL];
                 
                     [self.searchResults addObject:yelpListing];
-                   // NSLog(@"got data %@", yelpListing);
+                    //NSLog(@"got data %@", yelpListing);
+                    //NSLog(@"search result size: %d", [self.searchResults count]);
                 }
 
+                //NSLog(@"search result size: %d", [self.searchResults count]);
+
               //  [self.tableView reloadData];
-            }
-        }
-        
+            //}
+        //}
+        [self.tableView reloadData];
+
+        //NSLog(@"search result size: %d", [self.searchResults count]);
+
     //    NSLog(@"got search %@", self.searchResults);
 
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -151,12 +159,10 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
 
 - (void)didClickFilter
 {
-    NSLog(@"did click Filter delegated");
-    // TODO: probably shouldn't initialize this every time?
+    
     FilterViewController *filtersController = [[FilterViewController alloc] init];
     filtersController.delegate = self;
     
-    // wrap filtersController in a nav controller to get cancel and search buttons
     UINavigationController *wrapperNavController = [[UINavigationController alloc] initWithRootViewController:filtersController];
     [self presentViewController:wrapperNavController animated:YES completion: nil];
 }
@@ -165,9 +171,9 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
 {
     self.filters = [filters mutableCopy];
     
-    NSLog(@"doing search 1 %@", self.filters);
     [self dismissViewControllerAnimated:YES completion:nil];
     [self doSearch];
+    
 }
 
 - (void)didCancelFilter
@@ -185,16 +191,13 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
 
 - (UITableViewCell *)tableView:(UITableView *)tableView
          cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    
-   
+
     ListingCell *listingCell = [tableView dequeueReusableCellWithIdentifier:@"ListingCell"];
     
     Listing *yelpListing = self.searchResults[indexPath.row];
+
+    [listingCell setListing:yelpListing];    
     
-    listingCell.name.text = yelpListing.name;
-    listingCell.address.text = yelpListing.address[0];
-    NSLog(@"listing cell %@", listingCell);
-    [self.tableView reloadData];
     return listingCell;
 
 }
