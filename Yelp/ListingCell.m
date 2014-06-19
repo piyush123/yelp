@@ -31,9 +31,14 @@
     
     self.name.text = yelpListing.name;
     
-    NSLog(@"address %@", yelpListing.address[0]);
     
-    self.address.text = yelpListing.address[0];
+    
+    if ([yelpListing.address count]) {
+        NSLog(@"address %@", yelpListing.address[0]);
+        
+        self.address.text = yelpListing.address[0];
+    }
+    
     
     NSLog(@"categories %@", yelpListing.categories[0]);
     
@@ -41,6 +46,9 @@
     
     NSLog(@"review count %@", yelpListing.review_count);
     self.review_count.text = [NSString stringWithFormat:@"reviews %@", yelpListing.review_count];
+    
+    self.categories.text = yelpListing.categories[0][0];
+  //  self.categories.text = [NSString stringWithFormat:@"%@", yelpListing.categories];
     NSURL *image_url = [[NSURL alloc]initWithString:yelpListing.image_url];
     
     NSURLRequest *request = [NSURLRequest requestWithURL:image_url cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:2*60]; // New line

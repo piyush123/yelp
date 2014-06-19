@@ -22,6 +22,7 @@
 
 @property (weak, nonatomic) IBOutlet UIImageView *image;
 @property (weak, nonatomic) IBOutlet UIImageView *rating_image;
+
 @property (weak, nonatomic) IBOutlet UILabel *categories;
 
 @end

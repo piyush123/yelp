@@ -130,7 +130,7 @@ typedef NS_ENUM(NSInteger, FilterSection) {
     [self setNilableValueInDict:to key:@"radius_filter" value:from[@"radius_filter"]];
     [self setNilableValueInDict:to key:@"sort" value:from[@"sort"]];
     [self setNilableValueInDict:to key:@"deals_filter" value:from[@"deals_filter"]];
-    [self setNilableValueInDict:to key:@"kicks" value:from[@"kicks"]];
+
 }
 
 // TODO: should probably write category for this
@@ -249,9 +249,12 @@ typedef NS_ENUM(NSInteger, FilterSection) {
                 self.selectedDistanceIndex = indexPath.row;
                 
                 // only set the value in filters dictionary if it is not automatic
+                
                 [self.filters removeObjectForKey:@"radius_filter"];
                 if (indexPath.row >= 1) {
                     self.filters[@"radius_filter"] = self.distanceOptions[indexPath.row][0];
+                
+                    
                 }
                 NSArray* changedPaths = [self changedIndexPathsForSection:indexPath.section
                                                                  startRow:0

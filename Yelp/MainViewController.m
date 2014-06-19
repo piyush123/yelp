@@ -20,7 +20,7 @@ NSString * const kYelpConsumerSecret = @"33QCvh5bIF5jIHR5klQr7RtBDhQ";
 NSString * const kYelpToken = @"uRcRswHFYa1VkDrGV6LAW2F8clGh5JHV";
 NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
 
-@interface MainViewController () <UITableViewDataSource, UITableViewDelegate>
+@interface MainViewController () <UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 
@@ -46,7 +46,7 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
     if (self) {
         // You can register for Yelp API keys here: http://www.yelp.com/developers/manage_api_keys
         
-        self.filters = [[NSMutableDictionary alloc] initWithDictionary:@{@"term":@"thai", @"location":@"San Francisco"}];
+        self.filters = [[NSMutableDictionary alloc] initWithDictionary:@{@"term":@"pizza", @"location":@"San Francisco"}];
         
         self.client = [[YelpClient alloc] initWithConsumerKey:kYelpConsumerKey consumerSecret:kYelpConsumerSecret accessToken:kYelpToken accessSecret:kYelpTokenSecret];
     }
@@ -56,14 +56,16 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-     self.searchResults = [[NSMutableArray alloc] init];
+    self.searchResults = [[NSMutableArray alloc] init];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
     
+   
     
     self.searchBar = [[UISearchBar alloc] init];
     self.searchBar.delegate = self;
-    [self.searchBar sizeToFit];
+    
+    //[self.searchBar sizeToFit];
     
     
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Filter"
@@ -71,12 +73,12 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
                                                                             target:self
                                                                             action:@selector(didClickFilter)];
     
-    UISearchBar *searchBar = [UISearchBar new];
-    searchBar.showsCancelButton = NO;
-    searchBar.frame = CGRectMake(0, 0, 200, 24);
+   // UISearchBar *searchBar = [UISearchBar new];
+    self.searchBar.showsCancelButton = NO;
+    self.searchBar.frame = CGRectMake(0, 0, 200, 24);
     
-    UIView *barWrapper = [[UIView alloc]initWithFrame:searchBar.bounds];
-    [barWrapper addSubview:searchBar];
+    UIView *barWrapper = [[UIView alloc]initWithFrame:self.searchBar.bounds];
+    [barWrapper addSubview:self.searchBar];
     self.navigationItem.titleView = barWrapper;
     
     self.tableView.delegate = self;
@@ -121,7 +123,7 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
 
 - (void)doSearch
 {
-    NSLog(@"In do search");
+    NSLog(@"In do search %@", self.filters);
     [self.client search:self.filters success:^(AFHTTPRequestOperation *operation, id response) {
         NSLog(@"REsponse from yelp: %@", response);
         
@@ -200,6 +202,39 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
     
     return listingCell;
 
+}
+
+#pragma mark - UISearchBarDelegate
+
+- (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar
+{
+    NSLog(@"text edit");
+    searchBar.text = self.filters[@"term"];
+    self.searchBar.showsCancelButton = YES;
+}
+
+- (void)searchBarTextShouldBeginEditing:(UISearchBar *)searchBar
+{
+    NSLog(@"text edit");
+    searchBar.text = self.filters[@"term"];
+    self.searchBar.showsCancelButton = YES;
+}
+
+
+- (void) searchBarCancelButtonClicked:(UISearchBar *)searchBar
+{
+    NSLog(@"text 2 edit");
+    self.searchBar.showsCancelButton = NO;
+    [searchBar resignFirstResponder];
+}
+
+- (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar
+{
+     NSLog(@"text 3 edit");
+    self.searchBar.showsCancelButton = NO;
+    self.filters[@"term"] = searchBar.text;
+    [self doSearch];
+    [searchBar resignFirstResponder];
 }
 
 

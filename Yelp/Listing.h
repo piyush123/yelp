@@ -17,6 +17,7 @@
 @property (nonatomic,strong) NSArray  *categories;
 @property (nonatomic,strong) NSArray  *review_count;
 @property (nonatomic,strong) NSString *image_url;
+@property (nonatomic,strong) NSString *distance;
 @property (nonatomic, strong) NSString *rating_img_url;
 @property (nonatomic, strong) NSDictionary *location;
 @property (nonatomic, strong) NSArray *address;
