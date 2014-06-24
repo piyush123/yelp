@@ -15,6 +15,7 @@
 		174FED96195075970031217A /* switchCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 174FED94195075970031217A /* switchCell.xib */; };
 		174FED9A195075D60031217A /* selectCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 174FED98195075D60031217A /* selectCell.m */; };
 		174FED9B195075D60031217A /* selectCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 174FED99195075D60031217A /* selectCell.xib */; };
+		17CA73DE1957F1230062D67B /* NSDictionary+setDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CA73DD1957F1230062D67B /* NSDictionary+setDictionary.m */; };
 		17E9BF66194E21B3001C41B8 /* Listing.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E9BF65194E21B3001C41B8 /* Listing.m */; };
 		17E9BF70194E7374001C41B8 /* ListingCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E9BF6E194E7374001C41B8 /* ListingCell.m */; };
 		17E9BF71194E7374001C41B8 /* ListingCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17E9BF6F194E7374001C41B8 /* ListingCell.xib */; };
@@ -60,6 +61,8 @@
 		174FED97195075D60031217A /* selectCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = selectCell.h; sourceTree = "<group>"; };
 		174FED98195075D60031217A /* selectCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = selectCell.m; sourceTree = "<group>"; };
 		174FED99195075D60031217A /* selectCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = selectCell.xib; sourceTree = "<group>"; };
+		17CA73DC1957F1230062D67B /* NSDictionary+setDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+setDictionary.h"; sourceTree = "<group>"; };
+		17CA73DD1957F1230062D67B /* NSDictionary+setDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+setDictionary.m"; sourceTree = "<group>"; };
 		17E9BF64194E21B3001C41B8 /* Listing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Listing.h; sourceTree = "<group>"; };
 		17E9BF65194E21B3001C41B8 /* Listing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Listing.m; sourceTree = "<group>"; };
 		17E9BF6D194E7374001C41B8 /* ListingCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ListingCell.h; sourceTree = "<group>"; };
@@ -161,6 +164,8 @@
 				420474FA18DC2B2100E88E07 /* MainViewController.xib */,
 				17134966194FB3FF00589C8B /* FilterViewController.h */,
 				17134967194FB3FF00589C8B /* FilterViewController.m */,
+				17CA73DC1957F1230062D67B /* NSDictionary+setDictionary.h */,
+				17CA73DD1957F1230062D67B /* NSDictionary+setDictionary.m */,
 				17134968194FB3FF00589C8B /* FilterViewController.xib */,
 			);
 			name = "View Controllers";
@@ -388,6 +393,7 @@
 				174FED9A195075D60031217A /* selectCell.m in Sources */,
 				420474FB18DC2B2100E88E07 /* MainViewController.m in Sources */,
 				174FED95195075970031217A /* switchCell.m in Sources */,
+				17CA73DE1957F1230062D67B /* NSDictionary+setDictionary.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
