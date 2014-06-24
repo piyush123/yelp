@@ -1,4 +1,4 @@
- //
+//
 //  FilterViewController.m
 //  Yelp
 //
@@ -11,6 +11,7 @@
 #import "Categories.h"
 #import "selectCell.h"
 #import "switchCell.h"
+#import "NSDictionary+setDictionary.h"
 
 @interface FilterViewController ()
 
@@ -18,14 +19,12 @@
 
 @property (strong, nonatomic) NSMutableDictionary* filters;
 
-
-// TODO: should really be writing structs / classes to manage all this stuff
 @property (strong, nonatomic) NSArray const* sections;
-@property (strong, nonatomic) NSArray const* sortByOptions;
+@property (strong, nonatomic) NSArray const* sortOptions;
 @property (strong, nonatomic) NSArray const* distanceOptions;
 @property (strong, nonatomic) NSArray const* toggleOptions;
 @property (strong, nonatomic) Categories const* categories;
-@property (assign, nonatomic) NSInteger const NumCategoriesWhenCollapsed;
+@property (assign, nonatomic) NSInteger const categoriesCollapsed;
 
 @property (assign, nonatomic) BOOL sortByExpanded;
 @property (assign, nonatomic) BOOL distanceExpanded;
@@ -34,7 +33,7 @@
 @property (assign, nonatomic) NSInteger selectedDistanceIndex;
 
 typedef NS_ENUM(NSInteger, FilterSection) {
-    SortBySection,
+    SortSection,
     DistanceSection,
     MiscSection,
     CategorySection
@@ -52,12 +51,11 @@ typedef NS_ENUM(NSInteger, FilterSection) {
         self.selectedSortByIndex = 0;
         self.selectedDistanceIndex = 0;
         
-        
         self.sections = @[@"Sort by", @"Distance", @"General", @"Category"];
-        self.sortByOptions =  @[@"Best matched", @"Distance", @"Highest Rated"];
+        self.sortOptions =  @[@"Best matched", @"Distance", @"Highest Rated"];
         self.distanceOptions = @[@[@0,@"Automatic"], @[@0.3,@"0.3 miles"], @[@1.0,@"1 mile"], @[@5.0,@"5 miles"], @[@20.0,@"20 miles"]];
         self.toggleOptions = @[@[@"deals_filter",@"Offering a Deal"]];
-        self.NumCategoriesWhenCollapsed = 5;
+        self.categoriesCollapsed = 5;
     }
     
     return self;
@@ -97,64 +95,57 @@ typedef NS_ENUM(NSInteger, FilterSection) {
     self.navigationItem.rightBarButtonItem = searchButton;
 }
 
-- (void) setDelegate:(id<FiltersDelegate>)delegate
+- (void) filterDelegate:(id<FiltersDelegate>)delegate
 {
     _delegate = delegate;
     [self.filters removeAllObjects];
-    [self deepCopyFilterFrom:delegate.filters to:self.filters];
-    [self computeSelectedIndices];
+    [self copyFilter:delegate.filters to:self.filters];
+    [self setSortAndDistance];
     if (delegate.filters[@"category_filter"]) {
         self.categories = [[Categories alloc] initWithApiParam:delegate.filters[@"category_filter"]];
     }
     
 }
 
-// sync helper (read redundant) state vars
-- (void)computeSelectedIndices
+
+- (void)setSortAndDistance
 {
     self.selectedSortByIndex = [self.filters[@"sort"] integerValue];
     self.selectedDistanceIndex = 0;
     for (int i = 1; i < self.distanceOptions.count; ++i) {
-        // TODO: possible shady float comparision going on here
+        
         if (self.filters[@"radius_filter"] && [self.distanceOptions[i][0] isEqualToNumber:self.filters[@"radius_filter"]]) {
             self.selectedDistanceIndex = i;
         }
     }
 }
 
-// TODO: write a better copy method(s) somewhere else
-- (void)deepCopyFilterFrom:(NSDictionary*)from to:(NSMutableDictionary*)to
+- (void)copyFilter:(NSDictionary*)from to:(NSMutableDictionary*)to
 {
-    [self setNilableValueInDict:to key:@"term" value:from[@"term"]];
-    [self setNilableValueInDict:to key:@"location" value:from[@"location"]];
-    [self setNilableValueInDict:to key:@"radius_filter" value:from[@"radius_filter"]];
-    [self setNilableValueInDict:to key:@"sort" value:from[@"sort"]];
-    [self setNilableValueInDict:to key:@"deals_filter" value:from[@"deals_filter"]];
 
+    [from copyValueInDictionary:to key:@"term" value:from[@"term"]];
+
+    [from copyValueInDictionary:to key:@"location" value:from[@"location"]];
+    [from copyValueInDictionary:to key:@"radius_filter" value:from[@"radius_filter"]];
+    [from copyValueInDictionary:to key:@"sort" value:from[@"sort"]];
+    [from copyValueInDictionary:to key:@"deals_filter" value:from[@"deals_filter"]];
+    
 }
 
-// TODO: should probably write category for this
-// deletes value from dict if nil
-- (void)setNilableValueInDict:(NSMutableDictionary*)dict key:(id)key value:(id)value
-{
-    if (value) {
-        dict[key] = value;
-    } else {
-        [dict removeObjectForKey:key];
-    }
-}
+
+
 
 - (void) cancelFilter
 {
     NSLog(@"got cancel filter");
-    [self.delegate didCancelFilter];
+    [self.delegate cancelFilter];
 }
 
 - (void) confirmFilter
 {
     NSLog(@"got confirm here");
     self.filters[@"category_filter"] = self.categories.apiParam;
-    [self.delegate didConfirmFilter:self.filters];
+    [self.delegate confirmFilter:self.filters];
 }
 
 - (void)didReceiveMemoryWarning
@@ -164,7 +155,7 @@ typedef NS_ENUM(NSInteger, FilterSection) {
 
 - (void)didToggleSwitch:(UISwitch*)sender
 {
-    NSLog(@"Toggling row %ld", (long)sender.tag);
+
     NSString* filterKey = self.toggleOptions[sender.tag][0];
     if (sender.on) {
         self.filters[filterKey] = @YES;
@@ -187,14 +178,14 @@ typedef NS_ENUM(NSInteger, FilterSection) {
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     switch (section) {
-        case SortBySection:
-            return self.sortByExpanded ? self.sortByOptions.count : 1;
+        case SortSection:
+            return self.sortByExpanded ? self.sortOptions.count : 1;
         case DistanceSection:
             return self.distanceExpanded ? self.distanceOptions.count : 1;
         case MiscSection:
             return self.toggleOptions.count;
         case CategorySection:
-            return self.categoriesExpanded ? [self.categories count] : self.NumCategoriesWhenCollapsed + 1;
+            return self.categoriesExpanded ? [self.categories count] : self.categoriesCollapsed + 1;
         default:
             return 0;
             
@@ -204,17 +195,17 @@ typedef NS_ENUM(NSInteger, FilterSection) {
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     switch (indexPath.section) {
-        case SortBySection: {
+        case SortSection: {
             self.sortByExpanded = !self.sortByExpanded;
             [self.table beginUpdates];
             
-            // need this to get checkmark/expand to show properly
+           
             [self.table reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
             
             if (self.sortByExpanded) {
                 NSArray* changedPaths = [self changedIndexPathsForSection:indexPath.section
                                                                  startRow:0
-                                                                   endRow:self.sortByOptions.count
+                                                                   endRow:self.sortOptions.count
                                                                   exclude:self.selectedSortByIndex];
                 [self.table insertRowsAtIndexPaths:changedPaths withRowAnimation:UITableViewRowAnimationAutomatic];
                 
@@ -223,7 +214,7 @@ typedef NS_ENUM(NSInteger, FilterSection) {
                 self.filters[@"sort"] = [NSNumber numberWithInteger:indexPath.row];
                 NSArray* changedPaths = [self changedIndexPathsForSection:indexPath.section
                                                                  startRow:0
-                                                                   endRow:self.sortByOptions.count
+                                                                   endRow:self.sortOptions.count
                                                                   exclude:indexPath.row];
                 [self.table deleteRowsAtIndexPaths:changedPaths withRowAnimation:UITableViewRowAnimationAutomatic];
             }
@@ -232,10 +223,11 @@ typedef NS_ENUM(NSInteger, FilterSection) {
             break;
         }
         case DistanceSection: {
+            
             self.distanceExpanded = !self.distanceExpanded;
             [self.table beginUpdates];
             
-            // need this to get checkmark/expand to show properly
+          
             [self.table reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
             if (self.distanceExpanded) {
                 NSArray* changedPaths = [self changedIndexPathsForSection:indexPath.section
@@ -246,6 +238,8 @@ typedef NS_ENUM(NSInteger, FilterSection) {
                 [self.table insertRowsAtIndexPaths:changedPaths withRowAnimation:UITableViewRowAnimationAutomatic];
                 
             } else { // set value in filters dictionary and index helper var
+                
+                
                 self.selectedDistanceIndex = indexPath.row;
                 
                 // only set the value in filters dictionary if it is not automatic
@@ -268,7 +262,7 @@ typedef NS_ENUM(NSInteger, FilterSection) {
         }
        
         case CategorySection: {
-            if (!self.categoriesExpanded && indexPath.row == self.NumCategoriesWhenCollapsed) {
+            if (!self.categoriesExpanded && indexPath.row == self.categoriesCollapsed) {
                 self.categoriesExpanded = !self.categoriesExpanded;
             } else {
                 if ([self.categories isCategorySelectedAtIndex:indexPath.row]) {
@@ -282,6 +276,8 @@ typedef NS_ENUM(NSInteger, FilterSection) {
         }
     }
 }
+
+
 
 - (NSArray*) changedIndexPathsForSection:(NSInteger)section startRow:(NSInteger)start endRow:(NSInteger)end exclude:(NSInteger)exclude
 {
@@ -300,12 +296,12 @@ typedef NS_ENUM(NSInteger, FilterSection) {
     
        NSLog(@"entering here in table cell");
     switch (indexPath.section) {
-        case SortBySection: {
+        case SortSection: {
             
             NSLog(@"sort here in table cell");
             if (self.sortByExpanded) {
                 UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"UITableViewCell"];
-                cell.textLabel.text = self.sortByOptions[indexPath.row];
+                cell.textLabel.text = self.sortOptions[indexPath.row];
                 if (self.selectedSortByIndex == indexPath.row) {
                     cell.accessoryType = UITableViewCellAccessoryCheckmark;
                 } else {
@@ -314,7 +310,7 @@ typedef NS_ENUM(NSInteger, FilterSection) {
                 return cell;
             } else {
                 selectCell *cell = [tableView dequeueReusableCellWithIdentifier:@"selectCell"];
-                cell.textLabel.text = self.sortByOptions[self.selectedSortByIndex];
+                cell.textLabel.text = self.sortOptions[self.selectedSortByIndex];
                 return cell;
             }
         }
@@ -356,7 +352,7 @@ typedef NS_ENUM(NSInteger, FilterSection) {
         case CategorySection: {
             
             NSLog(@"category here in table cell");
-            if (!self.categoriesExpanded && indexPath.row == self.NumCategoriesWhenCollapsed) {
+            if (!self.categoriesExpanded && indexPath.row == self.categoriesCollapsed) {
                 UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SeeAllCell"];
                 cell.textLabel.text = @"See All";
                 cell.textLabel.textAlignment = NSTextAlignmentCenter;

@@ -10,4 +10,6 @@
 
 @interface NSDictionary (setDictionary)
 
+- (void)copyValueInDictionary:(NSMutableDictionary*)dict key:(id)key value:(id)value;
+
 @end

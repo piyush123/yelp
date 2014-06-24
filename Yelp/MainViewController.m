@@ -15,10 +15,12 @@
 #import <AFNetworking/AFNetworking.h>
 #import <AFNetworking/UIImageView+AFNetworking.h>
 
-NSString * const kYelpConsumerKey = @"vxKwwcR_NMQ7WaEiQBK_CA";
-NSString * const kYelpConsumerSecret = @"33QCvh5bIF5jIHR5klQr7RtBDhQ";
-NSString * const kYelpToken = @"uRcRswHFYa1VkDrGV6LAW2F8clGh5JHV";
-NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
+
+
+NSString * const kYelpConsumerKey = @"2COXi2he0ApxqbBkdRP9Rw";
+NSString * const kYelpConsumerSecret = @"dfhKfLpPO4OAC8-xPHZPVly3WjQ";
+NSString * const kYelpToken = @"qrxKGWebiy_tZwaOn6V5YBchYM2Hfo4B";
+NSString * const kYelpTokenSecret = @"RG9wcvTJ-pNAkutQCnelwA1T5DE";
 
 @interface MainViewController () <UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate>
 
@@ -42,15 +44,17 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
+    self.searchResults = [[NSMutableArray alloc] init];
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        // You can register for Yelp API keys here: http://www.yelp.com/developers/manage_api_keys
         
-        self.filters = [[NSMutableDictionary alloc] initWithDictionary:@{@"term":@"pizza", @"location":@"San Francisco"}];
-        
+        self.filters = [[NSMutableDictionary alloc] initWithDictionary:@{@"term":@"food", @"location":@"San Francisco"}];
         self.client = [[YelpClient alloc] initWithConsumerKey:kYelpConsumerKey consumerSecret:kYelpConsumerSecret accessToken:kYelpToken accessSecret:kYelpTokenSecret];
+        [self search];
     }
+    
     return self;
+  
 }
 
 - (void)viewDidLoad
@@ -60,7 +64,6 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
     
-   
     
     self.searchBar = [[UISearchBar alloc] init];
     self.searchBar.delegate = self;
@@ -71,28 +74,25 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Filter"
                                                                              style:UIBarButtonItemStylePlain
                                                                             target:self
-                                                                            action:@selector(didClickFilter)];
+                                                                            action:@selector(filter)];
     
-   // UISearchBar *searchBar = [UISearchBar new];
+
     self.searchBar.showsCancelButton = NO;
     self.searchBar.frame = CGRectMake(0, 0, 200, 24);
     
     UIView *barWrapper = [[UIView alloc]initWithFrame:self.searchBar.bounds];
     [barWrapper addSubview:self.searchBar];
     self.navigationItem.titleView = barWrapper;
-    
-    self.tableView.delegate = self;
 
     // Do any additional setup after loading the view from its nib.
     
     UINib *listingNib=[UINib nibWithNibName:@"ListingCell" bundle:nil];
     [self.tableView registerNib:listingNib forCellReuseIdentifier:@"ListingCell"];
     
-    self.tableView.dataSource = self;
     self.tableView.rowHeight = 100;
     
     //NSLog(@"Calling search from viewDid load");
-    [self doSearch];
+    //[self doSearch];
     //NSLog(@"view did load search result size: %d", [self.searchResults count]);
 
 }
@@ -116,16 +116,14 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
 {
     NSLog(@"filter");
     FilterViewController *j=[[FilterViewController alloc]init];
-    [self.navigationController pushViewController:j animated:YES];
-    
-    
+    [self.navigationController pushViewController:j animated:YES];    
 }
 
-- (void)doSearch
+- (void)search
 {
-    NSLog(@"In do search %@", self.filters);
+    NSLog(@"In  search %@", self.filters);
     [self.client search:self.filters success:^(AFHTTPRequestOperation *operation, id response) {
-        NSLog(@"REsponse from yelp: %@", response);
+       
         
                [self.searchResults removeAllObjects];
                 for (NSDictionary* dict in response[@"businesses"]) {
@@ -135,20 +133,13 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
                     yelpListing = [MTLJSONAdapter modelOfClass:Listing.class fromJSONDictionary:dict error:NULL];
                 
                     [self.searchResults addObject:yelpListing];
-                    //NSLog(@"got data %@", yelpListing);
-                    //NSLog(@"search result size: %d", [self.searchResults count]);
+                 
                 }
 
-                //NSLog(@"search result size: %d", [self.searchResults count]);
-
-              //  [self.tableView reloadData];
-            //}
-        //}
+        
         [self.tableView reloadData];
 
-        //NSLog(@"search result size: %d", [self.searchResults count]);
-
-    //    NSLog(@"got search %@", self.searchResults);
+     
 
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"error: %@", [error description]);
@@ -159,7 +150,7 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
 
      
 
-- (void)didClickFilter
+- (void)filter
 {
     
     FilterViewController *filtersController = [[FilterViewController alloc] init];
@@ -169,16 +160,16 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
     [self presentViewController:wrapperNavController animated:YES completion: nil];
 }
 
-- (void)didConfirmFilter:(NSDictionary*)filters
+- (void)confirmFilter:(NSDictionary*)filters
 {
     self.filters = [filters mutableCopy];
     
     [self dismissViewControllerAnimated:YES completion:nil];
-    [self doSearch];
+    [self search];
     
 }
 
-- (void)didCancelFilter
+- (void)cancelFilter
 {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
@@ -204,7 +195,6 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
 
 }
 
-#pragma mark - UISearchBarDelegate
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar
 {
@@ -233,7 +223,7 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
      NSLog(@"text 3 edit");
     self.searchBar.showsCancelButton = NO;
     self.filters[@"term"] = searchBar.text;
-    [self doSearch];
+    [self search];
     [searchBar resignFirstResponder];
 }
 

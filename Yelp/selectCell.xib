@@ -12,19 +12,7 @@
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
                 <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
                 <autoresizingMask key="autoresizingMask"/>
-                <subviews>
-                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="down_chevron" translatesAutoresizingMaskIntoConstraints="NO" id="1NG-aI-AhC">
-                        <rect key="frame" x="275" y="0.0" width="17" height="43"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                    </imageView>
-                </subviews>
             </tableViewCellContentView>
-            <connections>
-                <outlet property="select" destination="1NG-aI-AhC" id="wrz-LE-U8a"/>
-            </connections>
         </tableViewCell>
     </objects>
-    <resources>
-        <image name="down_chevron" width="512" height="512"/>
-    </resources>
 </document>

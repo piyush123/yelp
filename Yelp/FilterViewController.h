@@ -11,8 +11,8 @@
 
 @protocol FiltersDelegate <NSObject>
 - (NSDictionary*) filters;
-- (void)didConfirmFilter:(NSDictionary*)filters;
-- (void)didCancelFilter;
+- (void)confirmFilter:(NSDictionary*)filters;
+- (void)cancelFilter;
 @end
 
 @interface FilterViewController : UIViewController<UITableViewDelegate, UITableViewDataSource>
